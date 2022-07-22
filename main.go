@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	"image"
@@ -8,6 +9,7 @@ import (
 	_ "image/png"
 	"io/ioutil"
 	"os"
+	"runtime"
 	"strings"
 	"syscall"
 
@@ -212,13 +214,27 @@ func DecodeQR(fn string) (data string, err error) {
 }
 
 func readPassword() (password string, err error) {
+
 	fmt.Print("Enter Password: ")
-	bytePassword, err := term.ReadPassword(int(syscall.Stdin))
-	if err != nil {
-		return "", err
+	if runtime.GOOS == "windows" {
+
+		reader := bufio.NewReader(os.Stdin)
+		password, err = reader.ReadString('\n')
+		if err != nil {
+			return "", err
+		}
+
+	} else {
+
+		bytePassword, err := term.ReadPassword(int(syscall.Stdin))
+		if err != nil {
+			return "", err
+		}
+
+		password = string(bytePassword)
+
 	}
 
-	password = string(bytePassword)
 	return strings.TrimSpace(password), nil
 }
 
