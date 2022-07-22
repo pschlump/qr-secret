@@ -12,3 +12,7 @@ Data is limited to about 750 characters in a `256x256` bit QR code.
 The command line functionality is in place --- but this is very much
 a work in progress.
 
+## Test
+
+Run `make test` to run tests.
+
