@@ -21,7 +21,9 @@ func HashPassword(a ...string) []byte {
 
 func DataEncrypt(plaintext []byte, keyString string) (encryptedString string, err error) {
 
-	dbgo.Printf("at:%(LF)\n")
+	if db11 {
+		dbgo.Printf("at:%(LF)\n")
+	}
 	key := HashPassword(keyString)
 
 	// Create a new Cipher Block from the using key
@@ -55,7 +57,9 @@ func DataEncrypt(plaintext []byte, keyString string) (encryptedString string, er
 	// Convert to base 64 string
 	so := base64.StdEncoding.EncodeToString(ciphertext)
 
-	dbgo.Printf("at:%(LF)\n")
+	if db11 {
+		dbgo.Printf("at:%(LF)\n")
+	}
 	return so, nil
 	// return fmt.Sprintf("%x", ciphertext), nil // xyzzy - change to base 64
 }
@@ -108,5 +112,6 @@ func DataDecrypt(encryptedString string, keyString string) (decrypted []byte, er
 }
 
 const db8 = false
+const db11 = false
 
 /* vim: set noai ts=4 sw=4: */
