@@ -8,17 +8,23 @@ import (
 	_ "image/png"
 	"io/ioutil"
 	"os"
+	"strings"
+	"syscall"
 
 	"github.com/makiuchi-d/gozxing"
 	"github.com/makiuchi-d/gozxing/qrcode"
 	"github.com/pschlump/filelib"
 	"github.com/pschlump/goqrcode"
 	"github.com/pschlump/qr-secret/enc"
+	"golang.org/x/term"
 )
 
 // https://www.npmjs.com/package/ec-key#randomly-generated-keys
 
-//  Protocal:
+//
+// ------------------------------------------------------------------------------------------------------------
+// Server Protocal
+// ------------------------------------------------------------------------------------------------------------
 //
 // Scan (iphone/android) the QT
 // Has URL in it...
@@ -52,10 +58,33 @@ import (
 //			server data will timeout (discard) in 10 min.
 //		- If loop each scanned data chunk will maek the data larger until all scanned/returned.
 //
+//
+// cfg.json
+//
+//		QRDestUrl == qr_dest_url: "https://ttt.q8s.co/d"
+//
+// Idea:
+//
+//	have a ttt.q8s.co/register/login - that creates a "cookie" that you are logged in.
+//		Will this "cookie" get sent by Browser when you do the QR code from the camera?
+//		iPhone / Android - both.
+//		If no cookie -then- requie a "login" with un/pw
+//
+// so...
+//
+//		--hostport 			127.0.0.1:18410			host:port - to listen to
+//		--tls_keys									./keys where to find them
+//		--redis 									conneciton string
+//		--www 				./www 					directory for hosting data.
+//		--redis_prefix 		ttt:
+//
 
 var encode = flag.String("encode", "", "file to encode")
 var decode = flag.String("decode", "", "file to encode")
 var output = flag.String("output", "", "file to encode")
+
+var server = flag.Bool("server", false, "act as a webserver")
+var hostPort = flag.String("host-port", "127.0.0.1:18410", "listen on host:port")
 
 type EncHolder struct {
 	Version  string `json:"v,omitempty"`
@@ -79,7 +108,16 @@ func main() {
 		os.Exit(1)
 	}
 
-	keyString := "Ya ya Ya ya" // xyzzy TODO - function to read in the password
+	if *server && (*hostPort != "") {
+		// do all setup to act as a server
+	}
+
+	// keyString := "Ya ya Ya ya" // xyzzy TODO - function to read in the password
+	keyString, err := readPassword()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %s on reading password\n", err)
+		os.Exit(1)
+	}
 
 	out, err := filelib.Fopen(*output, "w")
 	if err != nil {
@@ -125,6 +163,7 @@ func main() {
 		out.Write(png)
 
 	} else if *decode != "" {
+
 		encContent, err := DecodeQR(*decode)
 		if err != nil {
 			os.Exit(1)
@@ -135,6 +174,7 @@ func main() {
 			os.Exit(1)
 		}
 		fmt.Fprintf(out, "%s", content)
+
 	}
 }
 
@@ -169,6 +209,17 @@ func DecodeQR(fn string) (data string, err error) {
 		fmt.Printf("%s: %s\n", fn, result)
 	}
 	return result.String(), nil
+}
+
+func readPassword() (password string, err error) {
+	fmt.Print("Enter Password: ")
+	bytePassword, err := term.ReadPassword(int(syscall.Stdin))
+	if err != nil {
+		return "", err
+	}
+
+	password = string(bytePassword)
+	return strings.TrimSpace(password), nil
 }
 
 const db7 = false
