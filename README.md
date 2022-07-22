@@ -1,36 +1,14 @@
 
 # QR-Secret - A CLI tool for creating encrypted QR code data.
 
-```
+`qr-secret` is a command line tool for creating QR codes where the
+data is AES256 bit encrypted.   You will be prompted for a password.
 
--d "data" 	-
--i file		- read in a file
--o qr.png	- output a single qr code (Limits amount of data)
--m dir		- create multipe QR codes in dir
--p			- Password Prompt
+It can also take an image of a QR and decrypt that data so you can 
+get back the original text file.
 
--s inputQr.png - Input an Image to decode/decrypt
--t outputFile - file to put data into
+Data is limited to about 750 characters in a `256x256` bit QR code.
 
-3kb of data per QR code
+The command line functionality is in place --- but this is very much
+a work in progress.
 
-http://qrcode.meetheed.com/question7.php
-
-https://ts.q8s.co/ttt?d={...}
-	{...} is the encrytped data
-
-use base64url
-
-github.com/dvsekhvalnov/jose2go/base64url
-
-{"c":"...","d":"...","p":1,"q":14} base 64 URL encoded
-
-1. DO Get Request
-	- Get back Pub of Pub/Priv temporary key
-	- Use Pub to encrypt data to send PW to it
-	- Get back a "ID" to communicate with.
-	https://ts.q8s.co/ttt?d={...}&pub=Caller's publick key - &id=XXX
-	https://ts.q8s.co/ttt?d={...}&pw=Enc(pwd) &id=XXX
-		-> returns text encrypte with key
-
-```
