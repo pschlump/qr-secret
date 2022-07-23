@@ -24,6 +24,7 @@ import (
 var encode = flag.String("encode", "", "file to encode")
 var decode = flag.String("decode", "", "file to encode")
 var output = flag.String("output", "", "file to encode")
+var help = flag.Bool("help", false, "print out usage message")
 
 var server = flag.Bool("server", false, "act as a webserver")
 var hostPort = flag.String("host-port", "127.0.0.1:18410", "listen on host:port")
@@ -38,7 +39,7 @@ type EncHolder struct {
 
 func main() {
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "qr_gen_server: Usage: %s [flags]\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "qr-secret: Usage: %s [flags]\n", os.Args[0])
 		flag.PrintDefaults()
 	}
 
@@ -47,6 +48,11 @@ func main() {
 	fns := flag.Args()
 	if len(fns) != 0 {
 		fmt.Printf("Extra arguments are not supported [%s]\n", fns)
+		os.Exit(1)
+	}
+
+	if *help {
+		flag.Usage()
 		os.Exit(1)
 	}
 
