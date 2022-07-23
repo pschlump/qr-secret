@@ -24,6 +24,7 @@ import (
 var encode = flag.String("encode", "", "file to encode")
 var decode = flag.String("decode", "", "file to encode")
 var output = flag.String("output", "", "file to encode")
+var password = flag.String("password", "", "file read password from")
 var help = flag.Bool("help", false, "print out usage message")
 
 var server = flag.Bool("server", false, "act as a webserver")
@@ -60,11 +61,22 @@ func main() {
 		// do all setup to act as a server
 	}
 
-	// keyString := "Ya ya Ya ya" // xyzzy TODO - function to read in the password
-	keyString, err := readPassword()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %s on reading password\n", err)
-		os.Exit(1)
+	var keyString string
+	var err error
+
+	if *password == "" || *password == "-" {
+		keyString, err = readPassword()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error: %s on reading password\n", err)
+			os.Exit(1)
+		}
+	} else {
+		buf, err := ioutil.ReadFile(*password)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error: unable to read password input file %s, error:%s\n", *password, err)
+			os.Exit(1)
+		}
+		keyString = string(buf)
 	}
 
 	out, err := filelib.Fopen(*output, "w")
