@@ -79,12 +79,19 @@ func main() {
 		keyString = string(buf)
 	}
 
-	out, err := filelib.Fopen(*output, "w")
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to open %s for output: %s\n", *output, err)
-		os.Exit(1)
+	var out *os.File
+	out = os.Stdout
+
+	if *output == "-" {
+		out = os.Stdout
+	} else {
+		out, err = filelib.Fopen(*output, "w")
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Unable to open %s for output: %s\n", *output, err)
+			os.Exit(1)
+		}
+		defer out.Close()
 	}
-	defer out.Close()
 
 	if *encode != "" {
 
