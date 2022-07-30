@@ -8,10 +8,12 @@ test: test001
 
 test001:
 	go build
-	./qr-secret --encode ./testdata/t2 --output ./out/t2.png
-	echo ""
-	./qr-secret --decode ./out/t2.png --output ./out/t2.txt
-	echo ""
+	./qr-secret --encode ./testdata/t2 --output ./out/t2.png \
+		--debug=show-decoded-url,show-encoded-url
+	@echo ""
+	./qr-secret --decode ./out/t2.png --output ./out/t2.txt \
+		--debug=show-decoded-url,show-encoded-url
+	@echo ""
 	diff testdata/t2 out/t2.txt
 
 install:

@@ -8,6 +8,7 @@ import (
 	_ "image/jpeg"
 	_ "image/png"
 	"io/ioutil"
+	"net/url"
 	"os"
 	"runtime"
 	"strings"
@@ -15,6 +16,7 @@ import (
 
 	"github.com/makiuchi-d/gozxing"
 	"github.com/makiuchi-d/gozxing/qrcode"
+	"github.com/pschlump/dbgo"
 	"github.com/pschlump/filelib"
 	"github.com/pschlump/goqrcode"
 	"github.com/pschlump/qr-secret/enc"
@@ -22,13 +24,18 @@ import (
 )
 
 var encode = flag.String("encode", "", "file to encode")
-var decode = flag.String("decode", "", "file to encode")
+var decode = flag.String("decode", "", "file to decode, showing just the encrypted part")
+var decodeURL = flag.String("decode-url", "", "file to encode, showing url (not decrypted)")
 var output = flag.String("output", "", "file to encode")
 var password = flag.String("password", "", "file read password from")
 var help = flag.Bool("help", false, "print out usage message")
+var urlPrefix = flag.String("url-prefix", "https://t.nfc-auth.com/e?d=", "URL to use in generating QR")
+var debug = flag.String("debug", "", "Debug Flags")
 
 var server = flag.Bool("server", false, "act as a webserver")
 var hostPort = flag.String("host-port", "127.0.0.1:18410", "listen on host:port")
+
+var DbOn map[string]bool = make(map[string]bool)
 
 type EncHolder struct {
 	Version  string `json:"v,omitempty"`
@@ -55,6 +62,12 @@ func main() {
 	if *help {
 		flag.Usage()
 		os.Exit(1)
+	}
+
+	if *debug != "" {
+		for _, k := range strings.Split(*debug, ",") {
+			DbOn[k] = true
+		}
 	}
 
 	if *server && (*hostPort != "") {
@@ -114,6 +127,11 @@ func main() {
 			os.Exit(1)
 		}
 
+		encContent = *urlPrefix + url.QueryEscape(encContent)
+		if DbOn["show-encoded-url"] {
+			dbgo.Printf("Encoded URL: ->%s<-\n", encContent)
+		}
+
 		// Generate the QR code in internal format
 		var q *goqrcode.QRCode
 		q, err = goqrcode.New(encContent, redundancy)
@@ -135,7 +153,19 @@ func main() {
 		if err != nil {
 			os.Exit(1)
 		}
-		content, err := enc.DataDecrypt(encContent, keyString)
+
+		encContentS := (string)(encContent)
+		if DbOn["show-decoded-url"] {
+			dbgo.Printf("Decoded URL: ->%s<-\n", encContentS)
+		}
+		// xyzzy - check length (Or Parse URL?)
+		encContentS = encContentS[len(*urlPrefix):]
+		encContentS, err = url.QueryUnescape(encContentS)
+		if err != nil {
+			// xyzzy
+		}
+
+		content, err := enc.DataDecrypt(encContentS, keyString)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Unable to decrypt %s Error: %s\n", *output, err)
 			os.Exit(1)
