@@ -16,3 +16,17 @@ a work in progress.
 
 Run `make test` to run tests.
 
+## To Run
+
+To encode some text (It will prompt you for the password).
+
+```
+	$ go build
+	$ ./qr-secret --encode my-file.txt --output output.png 
+```
+
+To recover the text from a QR code in a file
+
+```
+	$ ./qr-secret --decode ./output.png --output ./textfile.txt
+``` 
