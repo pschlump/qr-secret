@@ -6,7 +6,9 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
+	"fmt"
 	"io"
+	"os"
 
 	"github.com/pschlump/dbgo"
 )
@@ -71,7 +73,7 @@ func DataDecrypt(encryptedString string, keyString string) (decrypted []byte, er
 	}
 	key := HashPassword(keyString)
 
-	// enc, err := hex.DecodeString(encryptedString) // xyzzy
+	encryptedString = fix0Instring(encryptedString)
 	enc, err := base64.StdEncoding.DecodeString(encryptedString)
 	if err != nil {
 		dbgo.Printf("at:%(LF) err=%s\n", err)
@@ -109,6 +111,12 @@ func DataDecrypt(encryptedString string, keyString string) (decrypted []byte, er
 		dbgo.Printf("at:%(LF)\n")
 	}
 	return plaintext, nil
+}
+
+func fix0Instring(ee string) (rv string) {
+	rv = ee
+	fmt.Fprintf(os.Stderr, "%x\n", ee)
+	return
 }
 
 const db8 = false
